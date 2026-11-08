@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Subway Cyber-Rush 3D: High-Velocity Edition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 3D Canvas -->
+        <canvas id="canvas-3d"></canvas>
+
+        <!-- Speed vignette effect -->
+        <div id="speed-vignette"></div>
+
+        <!-- Floating Text Container for Score & Close Calls -->
+        <div id="floating-text-container"></div>
+
+        <!-- HUD -->
+        <div id="hud">
+            <div class="hud-left">
+                <div class="score-card glass-panel">
+                    <span class="hud-tag">Score</span>
+                    <div id="score-val" class="score-num">0</div>
+                    <div class="best-score-text">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        <span id="high-score-val">BEST: 0</span>
+                    </div>
+                </div>
+
+                <div class="speedometer-card">
+                    <span id="speed-indicator" class="speed-val">45</span>
+                    <span class="speed-unit">KM/H</span>
+                </div>
+            </div>
+
+            <div class="hud-center">
+                <div id="combo-badge">2X STREAK!</div>
+                <div id="powerup-badge" class="powerup-pill glass-panel">
+                    <span id="powerup-name" class="powerup-name">MAGNET</span>
+                    <div class="powerup-meter-bg">
+                        <div id="powerup-meter" class="powerup-meter-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hud-right">
+                <div class="coin-card glass-panel">
+                    <div class="coin-sphere"></div>
+                    <span id="coin-val" class="coin-num">0</span>
+                </div>
+
+                <button id="pause-btn" class="hud-btn" title="Pause Game">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+                        <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+                    </svg>
+                </button>
+
+                <button id="mute-btn" class="hud-btn" title="Toggle Sound">
+                    <svg id="sound-icon-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                    <svg id="sound-icon-off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <line x1="23" y1="9" x2="17" y2="15"></line>
+                        <line x1="17" y1="9" x2="23" y2="15"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Virtual Touch Controls for Mobile/Tablets -->
+        <div id="virtual-controls">
+            <div class="v-cluster">
+                <button id="v-btn-left" class="v-btn" title="Move Left">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <button id="v-btn-right" class="v-btn" title="Move Right">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+            </div>
+            <div class="v-cluster">
+                <button id="v-btn-slide" class="v-btn" title="Slide Down">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <button id="v-btn-jump" class="v-btn" title="Jump Up">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Start Menu Screen -->
+        <div id="start-screen" class="overlay-screen">
+            <div class="modal-box glass-panel">
+                <div class="glow-ambient"></div>
+                <div class="brand-badge">Next-Gen Subway Engine</div>
+                <h1 class="game-heading">Cyber Subway 3D</h1>
+                <p class="sub-desc">Dodge metro trains, jump hurdles, slide under lasers & grind the rails</p>
+
+                <!-- Select Rider -->
+                <div class="character-select-bar">
+                    <div class="char-card selected" data-char="runner">
+                        <span class="char-name">Street Runner</span>
+                        <span class="char-bonus">Agile & Balanced</span>
+                    </div>
+                    <div class="char-card" data-char="boarder">
+                        <span class="char-name">Cyber Boarder</span>
+                        <span class="char-bonus">+15% Coin Magnet</span>
+                    </div>
+                    <div class="char-card" data-char="striker">
+                        <span class="char-name">Neon Striker</span>
+                        <span class="char-bonus">+20% Jump Airtime</span>
+                    </div>
+                </div>
+
+                <!-- Control Guide -->
+                <div class="keys-grid">
+                    <div class="key-row">
+                        <span class="key-pill">A</span>
+                        <span class="key-pill">D</span>
+                        <span class="key-desc">Dodge Lanes</span>
+                    </div>
+                    <div class="key-row">
+                        <span class="key-pill">W</span>
+                        <span class="key-pill">Space</span>
+                        <span class="key-desc">Jump Hurdles</span>
+                    </div>
+                    <div class="key-row">
+                        <span class="key-pill">S</span>
+                        <span class="key-pill">↓</span>
+                        <span class="key-desc">Slide Under</span>
+                    </div>
+                    <div class="key-row">
+                        <span class="key-pill">P</span>
+                        <span class="key-desc">Pause Menu</span>
+                    </div>
+                </div>
+
+                <button id="start-btn" class="cta-button">START RUNNING</button>
+            </div>
+        </div>
+
+        <!-- Pause Menu Screen -->
+        <div id="pause-screen" class="overlay-screen hidden">
+            <div class="modal-box glass-panel">
+                <h2 class="game-heading" style="font-size: 34px;">PAUSED</h2>
+                <p class="sub-desc">Take a breather</p>
+                <div style="display:flex; flex-direction:column; gap:12px; margin-top:20px;">
+                    <button id="resume-btn" class="cta-button">RESUME GAME</button>
+                    <button id="pause-restart-btn" class="cta-button" style="background: rgba(30,41,59,0.8); color:#f8fafc; border:1px solid rgba(255,255,255,0.15);">RESTART</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="overlay-screen hidden">
+            <div class="modal-box glass-panel">
+                <div id="new-record-banner" class="record-pill hidden">🔥 NEW ALL-TIME RECORD!</div>
+                <h2 class="game-heading" style="font-size: 36px; color:#f43f5e;">CRASHED!</h2>
+                <p class="sub-desc" id="crash-quote">Watch out for oncoming trains!</p>
+
+                <div class="stats-summary">
+                    <div class="stat-cell">
+                        <span class="stat-title-small">Distance</span>
+                        <span id="final-dist" class="stat-val-big" style="color: #38bdf8;">0m</span>
+                    </div>
+                    <div class="stat-cell">
+                        <span class="stat-title-small">Coins</span>
+                        <span id="final-coins" class="stat-val-big" style="color: #fde047;">0</span>
+                    </div>
+                    <div class="stat-cell">
+                        <span class="stat-title-small">Total Score</span>
+                        <span id="final-score" class="stat-val-big" style="color: #ffffff;">0</span>
+                    </div>
+                </div>
+
+                <button id="restart-btn" class="cta-button">RUN AGAIN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Audio & Game Engine -->
+    <script src="audio.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

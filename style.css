@@ -1,0 +1,571 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Rajdhani:wght@600;700;800&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #05070f;
+    font-family: 'Outfit', sans-serif;
+    color: #ffffff;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#canvas-3d {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Speed vignette & motion edge glow */
+#speed-vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.7);
+    transition: box-shadow 0.3s ease;
+    z-index: 5;
+}
+
+/* HUD Overlay */
+#hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.glass-panel {
+    background: rgba(13, 19, 33, 0.72);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.hud-left {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.score-card {
+    padding: 12px 22px;
+    min-width: 180px;
+}
+
+.hud-tag {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.score-num {
+    font-size: 34px;
+    font-weight: 900;
+    font-family: 'Rajdhani', sans-serif;
+    color: #38bdf8;
+    letter-spacing: 1px;
+    text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+    line-height: 1.1;
+    margin: 2px 0;
+}
+
+.best-score-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: #fbbf24;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Speedometer HUD */
+.speedometer-card {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 6px 14px;
+    background: rgba(13, 19, 33, 0.6);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.speed-val {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #34d399;
+}
+
+.speed-unit {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+/* Center combo & powerup displays */
+.hud-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#combo-badge {
+    background: linear-gradient(135deg, #f43f5e, #fb923c);
+    color: white;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    padding: 6px 18px;
+    border-radius: 20px;
+    box-shadow: 0 0 24px rgba(244, 63, 94, 0.6);
+    transform: scale(0);
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#combo-badge.active {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.powerup-pill {
+    padding: 8px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transform: translateY(-15px);
+    transition: all 0.25s ease;
+}
+
+.powerup-pill.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.powerup-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #f43f5e;
+}
+
+.powerup-meter-bg {
+    width: 130px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.powerup-meter-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #f43f5e, #f59e0b);
+    border-radius: 4px;
+    transition: width 0.08s linear;
+}
+
+/* Right HUD */
+.hud-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    pointer-events: auto;
+}
+
+.coin-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+}
+
+.coin-sphere {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff176, #f59e0b 60%, #b45309 95%);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.8);
+    position: relative;
+    animation: coinShimmer 2s infinite linear;
+}
+
+@keyframes coinShimmer {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+}
+
+.coin-num {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #fde047;
+}
+
+.hud-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(13, 19, 33, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hud-btn:hover {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: #38bdf8;
+    color: #38bdf8;
+    transform: scale(1.06);
+}
+
+/* Floating Scores & Close Call Alerts */
+#floating-text-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 15;
+}
+
+.float-msg {
+    position: absolute;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 24px;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 16px rgba(0, 0, 0, 0.8);
+    animation: floatUp 0.85s forwards cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+
+@keyframes floatUp {
+    0% { transform: translate(-50%, 0) scale(0.6); opacity: 0; }
+    30% { transform: translate(-50%, -18px) scale(1.15); opacity: 1; }
+    100% { transform: translate(-50%, -55px) scale(0.9); opacity: 0; }
+}
+
+/* Modals & Overlays */
+.overlay-screen {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(10, 15, 30, 0.78), rgba(4, 6, 14, 0.94));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    transition: opacity 0.3s ease;
+}
+
+.overlay-screen.hidden {
+    display: none;
+    opacity: 0;
+}
+
+.modal-box {
+    width: 90%;
+    max-width: 520px;
+    padding: 36px 40px;
+    text-align: center;
+    border-radius: 28px;
+    position: relative;
+    overflow: hidden;
+    animation: modalAppear 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalAppear {
+    from { transform: scale(0.88) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.glow-ambient {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 250px;
+    height: 100px;
+    background: radial-gradient(ellipse, rgba(56, 189, 248, 0.25), transparent 70%);
+    pointer-events: none;
+}
+
+.brand-badge {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: #38bdf8;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 4px 14px;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 20px;
+    margin-bottom: 12px;
+}
+
+.game-heading {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 46px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    line-height: 1.05;
+    background: linear-gradient(135deg, #ffffff 30%, #38bdf8 70%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+}
+
+.sub-desc {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 24px;
+}
+
+/* Character Selector Carousel inside Menu */
+.character-select-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.char-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.char-card:hover {
+    border-color: rgba(56, 189, 248, 0.5);
+    background: rgba(30, 41, 59, 0.6);
+    transform: translateY(-2px);
+}
+
+.char-card.selected {
+    border-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.15);
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+}
+
+.char-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #e2e8f0;
+}
+
+.char-bonus {
+    font-size: 10px;
+    color: #38bdf8;
+}
+
+/* Key Guide Grid */
+.keys-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.key-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(15, 23, 42, 0.5);
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.key-pill {
+    background: #1e293b;
+    border: 1px solid #334155;
+    box-shadow: 0 2px 0 #0f172a;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #f8fafc;
+    min-width: 26px;
+    text-align: center;
+}
+
+.key-desc {
+    font-size: 12px;
+    color: #cbd5e1;
+    font-weight: 600;
+}
+
+/* Buttons */
+.cta-button {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    border: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #040814;
+    background: linear-gradient(135deg, #38bdf8 0%, #06b6d4 50%, #34d399 100%);
+    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(56, 189, 248, 0.6);
+}
+
+.cta-button:active {
+    transform: translateY(1px);
+}
+
+/* Game Over Stats Box */
+.stats-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 18px 12px;
+    margin: 20px 0;
+}
+
+.stat-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-title-small {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.stat-val-big {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    margin-top: 4px;
+    color: #f8fafc;
+}
+
+.record-pill {
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+    color: white;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    padding: 4px 16px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    display: inline-block;
+    animation: recordPulse 1.2s infinite alternate;
+}
+
+@keyframes recordPulse {
+    from { transform: scale(0.96); box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+    to { transform: scale(1.04); box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
+}
+
+/* Mobile On-Screen Virtual Touch Pads */
+#virtual-controls {
+    position: absolute;
+    bottom: 24px;
+    left: 0;
+    width: 100%;
+    padding: 0 28px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.v-cluster {
+    display: flex;
+    gap: 12px;
+    pointer-events: auto;
+}
+
+.v-btn {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: all 0.12s ease;
+}
+
+.v-btn:active {
+    background: rgba(56, 189, 248, 0.35);
+    border-color: #38bdf8;
+    transform: scale(0.92);
+}
+
+@media (min-width: 800px) {
+    #virtual-controls {
+        display: none; /* Hide on desktop keyboards */
+    }
+}
